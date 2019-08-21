@@ -1,0 +1,109 @@
+.slide-danmu {
+    position: absolute;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.slide-danmu .danmu-frame {
+    contain: layout;
+    height: 100%;
+    position: absolute;
+    will-change: transform;
+    /* opacity: 0.8; */
+}
+
+.slide-danmu .danmu-frame-common {
+    width: 400%;
+    left: 100%;
+}
+
+.slide-danmu .danmu-frame-acc {
+    width: 100%;
+    z-index: 21;
+}
+
+.slide-danmu .danmu-frame:nth-child(1) {
+    z-index: 11;
+}
+
+.slide-danmu .danmu-frame:nth-child(2) {
+    z-index: 10;
+}
+
+.slide-danmu .danmu-item {
+    position: absolute;
+    /* border: 1px solid black; */
+    display: inline-block;
+    border-radius: 2px;
+    padding: 3px 0 0;
+    color: #fff;
+    font-size: 20px;
+    text-decoration: none;
+    /* text-shadow: -1px 0 #000, 0 1px #000, 1px 0 #000, 0 -1px #000; */
+    line-height: 100%;
+    letter-spacing: 0;
+    word-break: keep-all;
+    white-space: pre;
+    margin: 0.1rem;
+    padding: 0.1rem;
+    user-select: none;
+}
+
+.slide-danmu .danmu-item-acc {
+    /* animation-name: animation-acc; */
+    animation-duration: 10s;
+    animation-timing-function: linear;
+    animation-delay: 0ms;
+    animation-fill-mode: forwards;
+    will-change: transform;
+    /* width: 100%; */
+    left: 100%;
+}
+
+.slide-danmu .danmu-animation-1 {
+    animation: animation-stage-1 40s linear 0ms;
+    animation-fill-mode: forwards;
+}
+
+.slide-danmu .danmu-animation-2 {
+    animation: animation-stage-2 40s linear 0ms;
+    animation-fill-mode: forwards;
+}
+
+@keyframes animation-stage-1 {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@keyframes animation-stage-2 {
+    from {
+        transform: translate3d(-50%, 0, 0);
+    }
+    to {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+.slide-danmu .hide {
+    display: none;
+}
+
+.inline-block {
+    display: inline-block;
+}
+
+.block {
+    display: block;
+}
+
+.fullWidth {
+    width: 100%;
+}
+
+.danmu-frame-common:nth-child(1) .danmu-item{
+    color: red;
+}
