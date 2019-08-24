@@ -8,7 +8,6 @@ export interface CommonLayerOption {
     duration?: number;
     checkPeriod?: number;
     useMeasure?: boolean;
-    slideRatio?: number;
     id?: number | string;
     zIndex?: number;
 }
@@ -22,21 +21,19 @@ const DEFAULT_OPTION = {
 };
 
 const DEFAULT_DANMU_CLASS = "danmu-item";
-const MIN_SLIDE_LENGTH = 2.5;
 const ANIMATION_STAGE1_CLASS = "danmu-animation-1";
 const ANIMATION_STAGE2_CLASS = "danmu-animation-2";
-const ANIMATION_STAGE1_NAME = 'animation-stage-1';
-const ANIMATION_STAGE2_NAME = 'animation-stage-2';
+const ANIMATION_STAGE1_NAME = "animation-stage-1";
+const ANIMATION_STAGE2_NAME = "animation-stage-2";
 
-
-enum animationPlayState{
+enum animationPlayState {
     paused = "paused",
     running = "running"
 }
 
 class CommonLayer extends Layer {
-    private frame1: HTMLDivElement;
-    private frame2: HTMLDivElement;
+    private frames: HTMLDivElement[];
+    private currentFrame: HTMLDivElement;
     private sample: HTMLDivElement;
     private HEIGHT: number;
     private WIDTH: number;
@@ -50,6 +47,7 @@ class CommonLayer extends Layer {
 
     constructor(container: HTMLElement) {
         super(container);
+        this.frames = [];
         this.sample = document.createElement("div");
         this.sample.className = DEFAULT_DANMU_CLASS;
         this.rect = container.getBoundingClientRect();
@@ -66,13 +64,13 @@ class CommonLayer extends Layer {
 
         const { HEIGHT, WIDTH } = this;
         this.option = Object.assign({}, DEFAULT_OPTION, option);
-        this.createFrames(this.container);
-        this.recycle();
+        this.createNewFrame();
+        this.resgisterAnimationEvents();
         this.getBaseMeasure(DEFAULT_DANMU_CLASS);
-        const traceHeight =  this.baseMeasure.outerHeight + this.baseMeasure.height;;
+        const traceHeight = this.baseMeasure.outerHeight + this.baseMeasure.height;
         this.traceManager = new TraceManager({
             height: HEIGHT,
-            width: (WIDTH * this.option.slideRatio) / 2,
+            width: WIDTH,
             traceHeight
         });
     }
@@ -84,19 +82,17 @@ class CommonLayer extends Layer {
         this.HEIGHT = container.clientHeight;
         this.WIDTH = container.clientWidth;
         this.getBaseMeasure(DEFAULT_DANMU_CLASS);
-        const traceHeight =  this.baseMeasure.outerHeight + this.baseMeasure.height;;
+        const traceHeight = this.baseMeasure.outerHeight + this.baseMeasure.height;
         this.traceManager.resize({
             height: this.HEIGHT,
-            width: (this.WIDTH * this.option.slideRatio) / 2,
+            width: this.WIDTH,
             traceHeight
         });
 
-        const newDuration =
-            ((this.WIDTH / this.initialWidth) * (option.duration * option.slideRatio)) / 2;
+        const newDuration = (this.WIDTH / this.initialWidth) * option.duration;
 
-        console.log('newDuration', newDuration);
-        this.frame2.style.animationDuration = newDuration + "ms";
-        this.frame1.style.animationDuration = newDuration + "ms";
+        console.log("newDuration", newDuration);
+        this.currentFrame.style.animationDuration = newDuration + "ms";
         // TODO:: 计算
         this.animatingTime = Date.now();
 
@@ -104,68 +100,44 @@ class CommonLayer extends Layer {
     }
 
     start() {
-        if (
-            this.frame1.classList.contains(ANIMATION_STAGE1_CLASS) ||
-            this.frame2.classList.contains(ANIMATION_STAGE1_CLASS)
-        ) {
+        if (this.currentFrame && this.currentFrame.classList.contains(ANIMATION_STAGE1_CLASS)) {
             console.log("already started...");
             return;
         }
-
-        this.frame1.classList.add(ANIMATION_STAGE1_CLASS);
+        this.createNewFrame();
+        this.currentFrame.classList.add(ANIMATION_STAGE1_CLASS);
         this.animatingTime = Date.now();
         this.status = 1;
         this.traceManager.reset();
+        this.recycle();
     }
 
     stop() {
         this.status = 0;
         this.clearTicket && clearInterval(this.clearTicket);
-
-        if (this.frame1) {
-            this.frame1.classList.remove(ANIMATION_STAGE1_CLASS, ANIMATION_STAGE2_CLASS);
-            this.frame1.innerHTML = "";
-            // 复位
-            this.frame1.getBoundingClientRect();
-        }
-        if (this.frame2) {
-            this.frame2.classList.remove(ANIMATION_STAGE1_CLASS, ANIMATION_STAGE2_CLASS);
-            this.frame2.innerHTML = "";
-            // 复位
-            this.frame2.getBoundingClientRect();
-        }
+        this.clearFrames(0);
     }
 
     pause() {
-        if (!this.frame1) {
+        if (!this.currentFrame) {
             return;
         }
-        this.frame1.style.animationPlayState = animationPlayState.paused;
-        if (!this.frame2) {
-            return;
-        }
-        this.frame2.style.animationPlayState = animationPlayState.paused;
+        this.frames.forEach(f => (f.style.animationPlayState = animationPlayState.paused));
         this.pausedTime = Date.now();
         this.status = 2;
     }
 
     continue() {
-        if (!this.frame1) {
+        if (!this.currentFrame) {
             return;
         }
-        this.frame1.style.animationPlayState = animationPlayState.running;
-        if (!this.frame2) {
-            return;
-        }
-        this.frame2.style.animationPlayState = animationPlayState.running;
+        this.frames.forEach(f => (f.style.animationPlayState = animationPlayState.running));
         this.animatingTime += Date.now() - this.pausedTime;
         this.pausedTime = 0;
         this.status = 1;
     }
 
     getCurrentX(el: HTMLElement) {
-        // const { duration } = this.option;
-        //const x = ((Date.now() - this.animatingTime) / (duration * 2)) * this.WIDTH * 2;
         const { x } = get2DTranslate(el);
         return -x;
     }
@@ -198,16 +170,12 @@ class CommonLayer extends Layer {
         this.traceManager.set(traceIndex, x, len);
     }
 
-    getFrame() {
-        return this.frame1.classList.contains(ANIMATION_STAGE1_CLASS) ? this.frame1 : this.frame2;
-    }
-
     send(queue: DanmuItem[]) {
         if (this.status !== 1 || queue.length <= 0) {
             return;
         }
 
-        const el = this.getFrame();
+        const el = this.currentFrame;
         if (!el) {
             return;
         }
@@ -250,30 +218,17 @@ class CommonLayer extends Layer {
         }
     }
 
-    createFrames(wrapper: HTMLElement) {
-        const { duration, slideRatio, id, zIndex } = this.option;
-        const frame1: HTMLDivElement = document.createElement("div");
-        frame1.className = "danmu-frame danmu-frame-common";
-        frame1.style.animationDuration = (duration * slideRatio) / 2 + "ms";
-        frame1.id = id + "_frames_frame1";
-        frame1.style.zIndex = zIndex + 1 + "";
-        const frame2 = frame1.cloneNode() as HTMLDivElement;
-        frame2.style.animationDuration = (duration * slideRatio) / 2 + "ms";
-        frame2.id = id + "_frames_frame2";
-        frame2.style.zIndex = zIndex + "";
-        if (slideRatio) {
-            const rate = Math.max(MIN_SLIDE_LENGTH, slideRatio);
-            frame1.style.width = `${rate * 100}%`;
-            frame2.style.width = `${rate * 100}%`;
-        }
+    createNewFrame(durationRate = 1) {
+        const { duration, id, zIndex } = this.option;
+        const frame: HTMLDivElement = document.createElement("div");
+        frame.className = "danmu-frame danmu-frame-common";
+        frame.style.animationDuration = duration * durationRate + "ms";
+        frame.id = id + "_frames_frame_" + this.frames.length;
+        frame.style.zIndex = zIndex + "";
 
-        wrapper.appendChild(frame1);
-        wrapper.appendChild(frame2);
-
-        this.frame1 = frame1;
-        this.frame2 = frame2;
-
-        this.resgisterAnimationEvents();
+        this.container.appendChild(frame);
+        this.frames.push(frame);
+        this.currentFrame = frame;
     }
 
     createDanmuItem(item: DanmuItem, left: number, top?: number) {
@@ -325,26 +280,25 @@ class CommonLayer extends Layer {
     recycle() {
         const { checkPeriod } = this.option;
         this.clearTicket = setInterval(() => {
-            const frame = document.querySelector("." + ANIMATION_STAGE2_CLASS);
-            if (!frame) {
-                return;
-            }
-            const { left, width } = this.rect;
-            const right = left + width;
-            // console.time("recycle");
-            const allItems = frame.querySelectorAll(".danmu-item:not(.hide)");
-            const notInViewItems = Array.from(allItems)
-                .slice(0, 120)
-                .filter(function(item) {
-                    const rect = item.getBoundingClientRect();
-                    const b = rect.left + rect.width >= left && rect.left <= right;
-                    return !b;
+            this.frames
+                .filter(frame => frame.classList.contains(ANIMATION_STAGE2_CLASS))
+                .forEach(frame => {
+                    const { left, width } = this.rect;
+                    const right = left + width;
+                    const allItems = frame.querySelectorAll(".danmu-item:not(.hide)");
+                    const notInViewItems = Array.from(allItems)
+                        .slice(0, 50)
+                        .filter(function(item) {
+                            const rect = item.getBoundingClientRect();
+                            const b = rect.left + rect.width >= left && rect.left <= right;
+                            return !b;
+                        });
+                    console.log("notInViewItems", notInViewItems.length);
+                    notInViewItems.forEach((child: HTMLElement) => {
+                        child.style.cssText = "";
+                        child.classList.add("hide");
+                    });
                 });
-            notInViewItems.forEach((child: HTMLElement) => {
-                child.style.cssText = "";
-                child.classList.add("hide");
-            });
-            // console.timeEnd("recycle");
         }, checkPeriod);
     }
 
@@ -369,47 +323,57 @@ class CommonLayer extends Layer {
         el.innerHTML = "";
     }
 
-    resgisterAnimationEvents() {
-        const { frame1, frame2, option } = this;
-        this.frame1.addEventListener("animationend", (ev: AnimationEvent) => {
-            switch (ev.animationName) {
-                case ANIMATION_STAGE1_NAME:
-                    this.animatingTime = Date.now();
-                    frame1.classList.remove(ANIMATION_STAGE1_CLASS);
-                    frame1.classList.add(ANIMATION_STAGE2_CLASS);
-                    frame2.classList.add(ANIMATION_STAGE1_CLASS);
-
-                    frame1.style.zIndex = option.zIndex + 1 + "";
-                    frame2.style.zIndex = option.zIndex + "";
-                    this.traceManager.increasePeriod();
-                    break;
-                case ANIMATION_STAGE2_NAME:
-                    this.clearDanmus(frame1);
-                    frame1.classList.remove(ANIMATION_STAGE2_CLASS);
-                    break;
-                default:
-                    break;
-            }
+    resetFramesZindex() {
+        const { zIndex } = this.option;
+        this.frames.forEach((f, index) => {
+            f.style.zIndex = Math.max(zIndex + 2 - index, 0) + "";
         });
+    }
 
-        frame2.addEventListener("animationend", (ev: AnimationEvent) => {
-            switch (ev.animationName) {
-                case ANIMATION_STAGE1_NAME:
-                    this.animatingTime = Date.now();
-                    frame2.classList.remove(ANIMATION_STAGE1_CLASS);
-                    frame2.classList.add(ANIMATION_STAGE2_CLASS);
-                    frame1.classList.add(ANIMATION_STAGE1_CLASS);
+    clearFrames(keep = 3) {
+        const sliceCount = this.frames.length - keep;
+        const deletingFrames = this.frames.splice(0, sliceCount);
+        if (deletingFrames.length > 0) {
+            for (let i = deletingFrames.length - 1; i >= 0; i--) {
+                this.container.removeChild(deletingFrames[i]);
+            }
+        }
+        if (this.frames.length === 0) {
+            this.currentFrame = null;
+        }
+    }
 
-                    frame2.style.zIndex = option.zIndex + 1 + "";
-                    frame1.style.zIndex = option.zIndex + "";
-                    this.traceManager.increasePeriod();
-                    break;
-                case ANIMATION_STAGE2_NAME:
-                    this.clearDanmus(frame2);
-                    frame2.classList.remove(ANIMATION_STAGE2_CLASS);
-                    break;
-                default:
-                    break;
+    resgisterAnimationEvents() {
+        const { frames, option } = this;
+        this.container.addEventListener("animationend", (ev: AnimationEvent) => {
+            const current = ev.target as HTMLDivElement;
+            const { currentFrame } = this;
+            if (this.frames.includes(current)) {
+                // TODO:: currentFrame otherFrame
+                if (current === currentFrame) {
+                    // 切换animation
+                    switch (ev.animationName) {
+                        case ANIMATION_STAGE1_NAME:
+                            this.animatingTime = Date.now();
+                            currentFrame.classList.remove(ANIMATION_STAGE1_CLASS);
+                            currentFrame.classList.add(ANIMATION_STAGE2_CLASS);
+                            currentFrame.style.animationDuration = option.duration * 2 + "ms";
+                            this.createNewFrame();
+                            this.currentFrame.classList.add("danmu-animation-1");
+                            this.resetFramesZindex();
+                            this.traceManager.increasePeriod();
+                            break;
+                        case ANIMATION_STAGE2_NAME:
+                            this.clearDanmus(currentFrame);
+                            currentFrame.classList.remove(ANIMATION_STAGE2_CLASS);
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    // 清理
+                    this.clearFrames();
+                }
             }
         });
     }

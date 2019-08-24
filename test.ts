@@ -12,19 +12,16 @@ var manager: DanmuManager | null = null;
 manager = getManager();
 (window as any).manager = manager;
 manager.init(containerEl, [
-    // {
-    //     duration: 10000,
-    //     slideRatio: 2,
-    //     useMeasure: true
-    // },
-    // {
-    //     duration: 8000,
-    //     slideRatio: 2,
-    //     useMeasure: true
-    // },
+    {
+        duration: 10000,
+        useMeasure: true
+    },
+    {
+        duration: 8000,
+        useMeasure: true
+    },
     {
         duration: 6000,
-        slideRatio: 3,
         useMeasure: true
     }
 ]);
@@ -32,8 +29,8 @@ manager.start();
 let ticket = 0;
 
 const pools = [
-    // { content: "完结撒花完结撒花完结撒花", style: "color:Red", duration: 10000 },
-    // { content: "25.5啥的也算一级", style: "color:blue", duration: 8000 },
+    { content: "完结撒花完结撒花完结撒花", style: "color:Red", duration: 10000 },
+    { content: "25.5啥的也算一级", style: "color:blue", duration: 8000 },
     // {
     //     forceDetect: true,
     //     duration:5000,
@@ -64,7 +61,7 @@ const pools = [
     // "黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴",
     {
         content: "子弹是金属，枪也是金属，炮姐直接操控啊,子弹是金属",
-        // style: "color:yellow",
+        style: "color:yellow",
         duration: 6000
     }
 ];

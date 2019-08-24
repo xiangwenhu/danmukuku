@@ -81,7 +81,7 @@ export class DanmuManager {
     }
 
     stop() {
-        if (this.status !== 1) {
+        if (![1,2].includes( this.status)) {
             return;
         }
         this.layers.forEach(l => l.stop());
