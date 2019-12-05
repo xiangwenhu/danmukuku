@@ -1,16 +1,8 @@
 import { get2DTranslate } from "../util";
 import Layer from "./layer";
 import TraceManager from "../traceManager";
-import { DanmuItem } from "../index";
-
-export interface CommonLayerOption {
-    reuse?: boolean;
-    duration?: number;
-    checkPeriod?: number;
-    useMeasure?: boolean;
-    id?: number | string;
-    zIndex?: number;
-}
+import { BUILTIN_CLASS } from "../constant";
+import { CommonLayerOption, DanmuItem } from "../types";
 
 const DEFAULT_OPTION = {
     reuse: false,
@@ -20,12 +12,6 @@ const DEFAULT_OPTION = {
     slideRatio: 3
 };
 
-const DEFAULT_DANMU_CLASS = "danmu-item";
-const ANIMATION_STAGE1_CLASS = "danmu-animation-1";
-const ANIMATION_STAGE2_CLASS = "danmu-animation-2";
-const ANIMATION_STAGE1_NAME = "animation-stage-1";
-const ANIMATION_STAGE2_NAME = "animation-stage-2";
-
 enum animationPlayState {
     paused = "paused",
     running = "running"
@@ -34,7 +20,7 @@ enum animationPlayState {
 class CommonLayer extends Layer {
     private frames: HTMLDivElement[];
     private currentFrame: HTMLDivElement;
-    private sample: HTMLDivElement;
+    private sampleDanmuItem: HTMLDivElement;
     private HEIGHT: number;
     private WIDTH: number;
     private initialWidth: number;
@@ -48,8 +34,6 @@ class CommonLayer extends Layer {
     constructor(container: HTMLElement) {
         super(container);
         this.frames = [];
-        this.sample = document.createElement("div");
-        this.sample.className = DEFAULT_DANMU_CLASS;
         this.rect = container.getBoundingClientRect();
         this.HEIGHT = container.clientHeight;
         this.WIDTH = container.clientWidth;
@@ -62,11 +46,14 @@ class CommonLayer extends Layer {
             option.id = Math.random();
         }
 
+        this.sampleDanmuItem = document.createElement("div");
+        this.sampleDanmuItem.className = option.className || BUILTIN_CLASS.DEFAULT_DANMU;
+
         const { HEIGHT, WIDTH } = this;
         this.option = Object.assign({}, DEFAULT_OPTION, option);
         this.createNewFrame();
         this.resgisterAnimationEvents();
-        this.getBaseMeasure(DEFAULT_DANMU_CLASS);
+        this.getBaseMeasure(BUILTIN_CLASS.DEFAULT_DANMU);
         const traceHeight = this.baseMeasure.outerHeight + this.baseMeasure.height;
         this.traceManager = new TraceManager({
             height: HEIGHT,
@@ -81,7 +68,7 @@ class CommonLayer extends Layer {
         this.rect = container.getBoundingClientRect();
         this.HEIGHT = container.clientHeight;
         this.WIDTH = container.clientWidth;
-        this.getBaseMeasure(DEFAULT_DANMU_CLASS);
+        this.getBaseMeasure(BUILTIN_CLASS.DEFAULT_DANMU);
         const traceHeight = this.baseMeasure.outerHeight + this.baseMeasure.height;
         this.traceManager.resize({
             height: this.HEIGHT,
@@ -100,12 +87,12 @@ class CommonLayer extends Layer {
     }
 
     start() {
-        if (this.currentFrame && this.currentFrame.classList.contains(ANIMATION_STAGE1_CLASS)) {
+        if (this.currentFrame && this.currentFrame.classList.contains(BUILTIN_CLASS.STAGE1_CLASS)) {
             console.log("already started...");
             return;
         }
         this.createNewFrame();
-        this.currentFrame.classList.add(ANIMATION_STAGE1_CLASS);
+        this.currentFrame.classList.add(BUILTIN_CLASS.STAGE1_CLASS);
         this.animatingTime = Date.now();
         this.status = 1;
         this.traceManager.reset();
@@ -148,10 +135,8 @@ class CommonLayer extends Layer {
         if (!useMeasure || forceDetect || render) {
             return el.getBoundingClientRect().width;
         }
-        if (useMeasure) {
-            const { baseMeasure } = this;
-            return content.length * baseMeasure.letterWidth + baseMeasure.outerWidth;
-        }
+        const { baseMeasure } = this;
+        return content.length * baseMeasure.letterWidth + baseMeasure.outerWidth;
     }
 
     getTraceInfo(item: DanmuItem) {
@@ -162,7 +147,6 @@ class CommonLayer extends Layer {
                 y: this.traceManager.traces[index].y
             };
         }
-
         return this.traceManager.get();
     }
 
@@ -179,7 +163,7 @@ class CommonLayer extends Layer {
         if (!el) {
             return;
         }
-        const poolItems = el.querySelectorAll(".danmu-item.hide");
+        const poolItems = el.querySelectorAll(`${BUILTIN_CLASS.DEFAULT_DANMU}.hide`);
         const poolLength = poolItems.length;
         const x = this.getCurrentX(el);
         // 先利用资源池
@@ -190,7 +174,7 @@ class CommonLayer extends Layer {
                 const item = queue[index];
                 const { index: traceIndex, y: top } = this.getTraceInfo(item);
                 newItem = poolItems[index] as HTMLDivElement;
-                newItem.class = DEFAULT_DANMU_CLASS;
+                newItem.class = BUILTIN_CLASS.DEFAULT_DANMU;
                 newItem.innerHTML = item.content;
                 newItem.style.cssText = `top:${top}px;left:${x}px;${item.style || ""}`;
                 if (item.className) {
@@ -221,7 +205,7 @@ class CommonLayer extends Layer {
     createNewFrame(durationRate = 1) {
         const { duration, id, zIndex } = this.option;
         const frame: HTMLDivElement = document.createElement("div");
-        frame.className = "danmu-frame danmu-frame-common";
+        frame.className = BUILTIN_CLASS.FRAME;
         frame.style.animationDuration = duration * durationRate + "ms";
         frame.id = id + "_frames_frame_" + this.frames.length;
         frame.style.zIndex = zIndex + "";
@@ -238,7 +222,7 @@ class CommonLayer extends Layer {
         }
 
         const { top: t, left: l } = this.getNewTopLeft(left, top);
-        el = this.sample.cloneNode() as HTMLElement;
+        el = this.sampleDanmuItem.cloneNode() as HTMLElement;
         el.innerHTML = item.content;
         el.dataset.tLength = item.content.length + "";
         el.style.cssText = `top:${t}px;left:${l}px;${item.style || ""}`;
@@ -253,13 +237,13 @@ class CommonLayer extends Layer {
         if (typeof item.render === "function") {
             const el = item.render(data);
             if (el instanceof HTMLElement) {
-                if (!el.classList.contains(DEFAULT_DANMU_CLASS)) {
-                    el.classList.add(DEFAULT_DANMU_CLASS);
+                if (!el.classList.contains(BUILTIN_CLASS.DEFAULT_DANMU)) {
+                    el.classList.add(BUILTIN_CLASS.DEFAULT_DANMU);
                 }
                 return el;
             }
             if (typeof el === "string") {
-                return this.wrapperHTMLStringDanmu(left, top, item.render);
+                return this.wrapperHTMLStringDanmu(left, top, el);
             }
         } else if (typeof item.render === "object" && item.render instanceof HTMLElement) {
             return item.render;
@@ -269,9 +253,9 @@ class CommonLayer extends Layer {
         return null;
     }
 
-    wrapperHTMLStringDanmu(left, top, content) {
+    wrapperHTMLStringDanmu(left: number, top: number, content: string) {
         const { top: t, left: l } = this.getNewTopLeft(left, top);
-        const el = this.sample.cloneNode() as HTMLElement;
+        const el = this.sampleDanmuItem.cloneNode() as HTMLElement;
         el.innerHTML = content;
         el.style.cssText = `top:${t}px;left:${l}px;`;
         return el;
@@ -279,16 +263,17 @@ class CommonLayer extends Layer {
 
     recycle() {
         const { checkPeriod } = this.option;
-        this.clearTicket = setInterval(() => {
+        window.clearInterval(this.clearTicket);
+        this.clearTicket = window.setInterval(() => {
             this.frames
-                .filter(frame => frame.classList.contains(ANIMATION_STAGE2_CLASS))
+                .filter(frame => frame.classList.contains(BUILTIN_CLASS.STAGE2_CLASS))
                 .forEach(frame => {
                     const { left, width } = this.rect;
                     const right = left + width;
-                    const allItems = frame.querySelectorAll(".danmu-item:not(.hide)");
+                    const allItems = frame.querySelectorAll(`.${BUILTIN_CLASS.DEFAULT_DANMU}:not(.hide)`);
                     const notInViewItems = Array.from(allItems)
                         .slice(0, 50)
-                        .filter(function(item) {
+                        .filter(function (item) {
                             const rect = item.getBoundingClientRect();
                             const b = rect.left + rect.width >= left && rect.left <= right;
                             return !b;
@@ -311,7 +296,7 @@ class CommonLayer extends Layer {
 
     clearDanmus(el: HTMLDivElement) {
         if (this.option.reuse) {
-            el.querySelectorAll(".danmu-item:not(.hide)").forEach((child: HTMLElement) => {
+            el.querySelectorAll(`.${BUILTIN_CLASS.DEFAULT_DANMU}:not(.hide)`).forEach((child: HTMLElement) => {
                 child.classList.add("hide");
                 if (child.style.transition) {
                     child.style.transition = null;
@@ -353,19 +338,19 @@ class CommonLayer extends Layer {
                 if (current === currentFrame) {
                     // 切换animation
                     switch (ev.animationName) {
-                        case ANIMATION_STAGE1_NAME:
+                        case BUILTIN_CLASS.STAGE1_KF_NAME:
                             this.animatingTime = Date.now();
-                            currentFrame.classList.remove(ANIMATION_STAGE1_CLASS);
-                            currentFrame.classList.add(ANIMATION_STAGE2_CLASS);
+                            currentFrame.classList.remove(BUILTIN_CLASS.STAGE1_CLASS);
+                            currentFrame.classList.add(BUILTIN_CLASS.STAGE2_CLASS);
                             currentFrame.style.animationDuration = option.duration * 2 + "ms";
                             this.createNewFrame();
                             this.currentFrame.classList.add("danmu-animation-1");
                             this.resetFramesZindex();
                             this.traceManager.increasePeriod();
                             break;
-                        case ANIMATION_STAGE2_NAME:
+                        case BUILTIN_CLASS.STAGE2_KF_NAME:
                             this.clearDanmus(currentFrame);
-                            currentFrame.classList.remove(ANIMATION_STAGE2_CLASS);
+                            currentFrame.classList.remove(BUILTIN_CLASS.STAGE2_CLASS);
                             break;
                         default:
                             break;

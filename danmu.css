@@ -1,34 +1,28 @@
-.slide-danmu {
-    position: absolute;
-    overflow: hidden;
-    pointer-events: none;
-}
-
-.slide-danmu .danmu-frame {
+.danmu-frame {
     contain: layout;
     height: 100%;
     position: absolute;
     will-change: transform;
 }
 
-.slide-danmu .danmu-frame-common {
+.danmu-frame-common {
     width: 100%;
     left: 100%;
 }
 
-.slide-danmu .danmu-frame:nth-child(1) {
+.danmu-frame:nth-child(1) {
     z-index: 11;
 }
 
-.slide-danmu .danmu-frame:nth-child(2) {
+.danmu-frame:nth-child(2) {
     z-index: 10;
 }
 
-.slide-danmu .danmu-frame:nth-child(3) {
+.danmu-frame:nth-child(3) {
     z-index: 9;
 }
 
-.slide-danmu .danmu-item {
+.danmu-item {
     position: absolute;
     display: inline-block;
     border-radius: 2px;
@@ -45,12 +39,12 @@
     user-select: none;
 }
 
-.slide-danmu .danmu-animation-1 {
+.danmu-animation-1 {
     animation: animation-stage-1 40s linear 0ms;
     animation-fill-mode: forwards;
 }
 
-.slide-danmu .danmu-animation-2 {
+.danmu-animation-2 {
     animation: animation-stage-2 40s linear 0ms;
     animation-fill-mode: forwards;
 }
@@ -73,18 +67,7 @@
     }
 }
 
-.slide-danmu .hide {
+.hide {
     display: none;
 }
 
-.inline-block {
-    display: inline-block;
-}
-
-.block {
-    display: block;
-}
-
-.fullWidth {
-    width: 100%;
-}

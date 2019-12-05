@@ -1,5 +1,4 @@
-import { DanmuItem } from "../index";
-import { ElementRect } from "../types";
+import { ElementRect, DanmuItem } from "../types";
 import { measureElement } from "../util";
 
 export default abstract class Layer {
@@ -29,9 +28,9 @@ export default abstract class Layer {
 
     abstract send(items: DanmuItem[]): void;
 
-    getBaseMeasure(className, tagName: string = "div"){
+    getBaseMeasure(className, tagName: string = "div") {
         this.baseMeasure = measureElement(tagName, className, this.container);
-    } 
+    }
 
     remove(itemId: string | number) {
         const el = this.container.querySelector(`[danmu-id='${itemId}']`);

@@ -1,16 +1,8 @@
+import { DanmuItem, CommonLayerOption } from './types';
 import Layer from "./layers/layer";
-import CommonLayer, { CommonLayerOption } from "./layers/common";
+import CommonLayer from "./layers/common";
 import { enqueue, addListener, removeListener, dequeue } from "./queue";
 
-export interface DanmuItem {
-    content?: string;
-    forceDetect?: boolean;
-    render?: ((any) => HTMLElement) | HTMLElement | string;
-    className?: string;
-    style?: string;
-    trace?: number;
-    duration?: number;
-}
 
 type DanmuContent = string | DanmuItem;
 
@@ -81,7 +73,7 @@ export class DanmuManager {
     }
 
     stop() {
-        if (![1,2].includes( this.status)) {
+        if (![1, 2].includes(this.status)) {
             return;
         }
         this.layers.forEach(l => l.stop());
