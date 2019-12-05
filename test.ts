@@ -1,4 +1,6 @@
-import getManager, { DanmuManager } from "./lib/index";
+// import DanmuManager from "./dist/es6"   // ES6
+// const DanmuManager = require("./dist/cmjs").default; // commonjs
+import DanmuManager from "./lib";
 
 const videoEl = document.querySelector("video");
 let isPlayed = false;
@@ -8,8 +10,7 @@ videoEl.oncanplay = function() {
     }
 };
 const containerEl = document.getElementById("container");
-var manager: DanmuManager | null = null;
-manager = getManager();
+var manager =  new DanmuManager();
 (window as any).manager = manager;
 manager.init(containerEl, [
     {
