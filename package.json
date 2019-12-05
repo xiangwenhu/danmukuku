@@ -9,7 +9,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "parcel index.html",
-    "build": "parcel build index.html",
+    "build:cmjs": "tsc -P tsconfig.json --module commonjs --outDir dist/cmjs",
+    "build:es6": "tsc -P tsconfig.json --module ES6 --outDir dist/es6",
+    "build:web": "browserify dist/cmjs/index.js --standalone danmukuku -o dist/web/danmukuku.js",
+    "build": "npm run build:cmjs && npm run build:es6 && npm run build:web",
     "build:github": "parcel build index.html -d docs --public-url ./"
   },
   "author": "",

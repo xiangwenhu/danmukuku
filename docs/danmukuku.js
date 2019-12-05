@@ -107,11 +107,7 @@ var DanmuManager = /** @class */ (function () {
     };
     return DanmuManager;
 }());
-exports.DanmuManager = DanmuManager;
-function getDanmuManager() {
-    return new DanmuManager();
-}
-exports.default = getDanmuManager;
+exports.default = DanmuManager;
 
 },{"./layers/common":3,"./queue":5}],3:[function(require,module,exports){
 "use strict";

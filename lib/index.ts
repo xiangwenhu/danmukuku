@@ -10,7 +10,7 @@ function toDanmuItem(danmu: string | DanmuItem): DanmuItem {
     return typeof danmu === "string" ? { content: danmu } : danmu;
 }
 
-export class DanmuManager {
+export default class DanmuManager {
     private layers: Layer[] = [];
     private status: 0 | 1 | 2; // 枚举？ 0: 停止  1 运行  2 暂停
 
@@ -107,8 +107,3 @@ export class DanmuManager {
     }
 }
 
-function getDanmuManager(): DanmuManager {
-    return new DanmuManager();
-}
-
-export default getDanmuManager;

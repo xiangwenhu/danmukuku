@@ -9,7 +9,7 @@ videoEl.oncanplay = function () {
 };
 var containerEl = document.getElementById("container");
 var manager = null;
-manager = window.DanmuManager();
+manager = new window.danmukuku.default();
 window.manager = manager;
 manager.init(containerEl, [
     {
