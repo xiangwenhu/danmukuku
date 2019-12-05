@@ -1,0 +1,73 @@
+.danmu-frame {
+    contain: layout;
+    height: 100%;
+    position: absolute;
+    will-change: transform;
+}
+
+.danmu-frame-common {
+    width: 100%;
+    left: 100%;
+}
+
+.danmu-frame:nth-child(1) {
+    z-index: 11;
+}
+
+.danmu-frame:nth-child(2) {
+    z-index: 10;
+}
+
+.danmu-frame:nth-child(3) {
+    z-index: 9;
+}
+
+.danmu-item {
+    position: absolute;
+    display: inline-block;
+    border-radius: 2px;
+    padding: 3px 0 0;
+    color: #fff;
+    font-size: 20px;
+    text-decoration: none;
+    line-height: 100%;
+    letter-spacing: 0;
+    word-break: keep-all;
+    white-space: pre;
+    margin: 0.1rem;
+    padding: 0.1rem;
+    user-select: none;
+}
+
+.danmu-animation-1 {
+    animation: animation-stage-1 40s linear 0ms;
+    animation-fill-mode: forwards;
+}
+
+.danmu-animation-2 {
+    animation: animation-stage-2 40s linear 0ms;
+    animation-fill-mode: forwards;
+}
+
+@keyframes animation-stage-1 {
+    from {
+        transform: translate3d(0, 0, 0);
+    }
+    to {
+        transform: translate3d(-100%, 0, 0);
+    }
+}
+
+@keyframes animation-stage-2 {
+    from {
+        transform: translate3d(-100%, 0, 0);
+    }
+    to {
+        transform: translate3d(-300%, 0, 0);
+    }
+}
+
+.hide {
+    display: none;
+}
+
