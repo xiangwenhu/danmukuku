@@ -2,7 +2,8 @@
   "name": "danmu",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "build/cmjs/index.js",
+  "module": "build/es6/index.js",
   "directories": {
     "lib": "lib"
   },
