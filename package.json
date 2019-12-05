@@ -1,9 +1,12 @@
 {
-  "name": "danmu",
-  "version": "1.0.0",
+  "name": "danmukuku",
+  "version": "0.0.2",
   "description": "",
   "main": "build/cmjs/index.js",
   "module": "build/es6/index.js",
+   "files": [
+     "build"
+   ],
   "directories": {
     "lib": "lib"
   },
