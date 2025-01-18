@@ -2,14 +2,14 @@
 // const DanmuManager = require("./dist/cmjs").default; // commonjs
 import DanmuManager from "./lib";
 
-const videoEl = document.querySelector("video");
+const videoEl = document.querySelector("video")!;
 let isPlayed = false;
 videoEl.oncanplay = function() {
     if (!isPlayed) {
         isPlayed = true;
     }
 };
-const containerEl = document.getElementById("container");
+const containerEl = document.getElementById("container")!;
 var manager =  new DanmuManager();
 (window as any).manager = manager;
 manager.init(containerEl, [
@@ -17,14 +17,14 @@ manager.init(containerEl, [
         duration: 10000,
         useMeasure: true
     },
-    {
-        duration: 8000,
-        useMeasure: true
-    },
-    {
-        duration: 6000,
-        useMeasure: true
-    }
+    // {
+    //     duration: 8000,
+    //     useMeasure: true
+    // },
+    // {
+    //     duration: 6000,
+    //     useMeasure: true
+    // }
 ]);
 manager.start();
 let ticket = 0;
@@ -32,34 +32,34 @@ let ticket = 0;
 const pools = [
     { content: "完结撒花完结撒花完结撒花", style: "color:Red", duration: 10000 },
     { content: "25.5啥的也算一级", style: "color:blue", duration: 8000 },
+    {
+        forceDetect: true,
+        duration:5000,
+        content:
+            "<img src='//static.hdslb.com/images/member/noface.gif' style='height:20px;vertical-align: middle;'>留下jo印留下jo印留下jo印"
+    },
+    {  duration:5000, render: "高价回收天堂之眼，不要问我为什么" },
+    {
+        render: ({ left, top }) => {
+            const el = document.createElement("span");
+            el.innerHTML = "麦姐在学院除了老大老二基本就是最厉害的了 from span";
+            el.style.left = left + "px";
+            el.style.top = top + "px";
+            // el.style.zIndex = "999";
+            // el.style.backgroundColor = "#666";
+            return el;
+        }
+    },
     // {
-    //     forceDetect: true,
-    //     duration:5000,
     //     content:
-    //         "<img src='//static.hdslb.com/images/member/noface.gif' style='height:20px;vertical-align: middle;'>留下jo印留下jo印留下jo印"
-    // }
-    // {  duration:5000, render: "高价回收天堂之眼，不要问我为什么" },
-    // {
-    //     render: ({ left, top }) => {
-    //         const el = document.createElement("span");
-    //         el.innerHTML = "麦姐在学院除了老大老二基本就是最厉害的了 from span";
-    //         el.style.left = left + "px";
-    //         el.style.top = top + "px";
-    //         // el.style.zIndex = "999";
-    //         // el.style.backgroundColor = "#666";
-    //         return el;
-    //     }
+    //         "<img src='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1565416527128&di=86e45c16db43679153f959bbe08a3f51&imgtype=0&src=http%3A%2F%2Fimg.xinxic.com%2Fimg%2F35167cff7ee71983.jpg' style='height:60px'/>",
+    //     forceDetect: true,
+    //     style: "z-index:99;"
     // },
-    // // {
-    // //     content:
-    // //         "<img src='https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1565416527128&di=86e45c16db43679153f959bbe08a3f51&imgtype=0&src=http%3A%2F%2Fimg.xinxic.com%2Fimg%2F35167cff7ee71983.jpg' style='height:60px'/>",
-    // //     forceDetect: true,
-    // //     style: "z-index:99;"
-    // // },
-    // "好假炮姐当年1v3有一个5的和两个4的都打得过",
-    // "这个女的好帅啊，一拳一个机器人的那个",
-    // "哇喔哇喔哇喔哇喔好燃啊！！！",
-    // "黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴",
+    "好假炮姐当年1v3有一个5的和两个4的都打得过",
+    "这个女的好帅啊，一拳一个机器人的那个",
+    "哇喔哇喔哇喔哇喔好燃啊！！！",
+    "黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴黑琴",
     {
         content: "子弹是金属，枪也是金属，炮姐直接操控啊,子弹是金属",
         style: "color:yellow",
@@ -92,7 +92,7 @@ function startBatch() {
 
 let isBigTest = false;
 const txtDanmuEl: HTMLInputElement = document.getElementById("txtDanmu") as HTMLInputElement;
-document.getElementById("btnSend").addEventListener(
+document.getElementById("btnSend")!.addEventListener(
     "click",
     ev => {
         manager.sendDanmu(txtDanmuEl.value);
@@ -101,31 +101,31 @@ document.getElementById("btnSend").addEventListener(
     false
 );
 
-document.getElementById("btnPause").addEventListener("click", () => {
+document.getElementById("btnPause")!.addEventListener("click", () => {
     if (isBigTest) {
         clearInterval(ticket);
     }
     manager.pause();
 });
 
-document.getElementById("btnContiue").addEventListener("click", () => {
+document.getElementById("btnContiue")!.addEventListener("click", () => {
     if (isBigTest) {
         startBatch();
     }
     manager.continue();
 });
 
-document.getElementById("btnStart").addEventListener("click", () => {
+document.getElementById("btnStart")!.addEventListener("click", () => {
     manager.start();
 });
 
-document.getElementById("btnStop").addEventListener("click", () => {
+document.getElementById("btnStop")!.addEventListener("click", () => {
     manager.stop();
     clearInterval(ticket);
     isBigTest = false;
 });
 
-document.getElementById("btnBigTest").addEventListener("click", () => {
+document.getElementById("btnBigTest")!.addEventListener("click", () => {
     if (isBigTest) {
         return;
     }
@@ -137,6 +137,7 @@ document.getElementById("btnBigTest").addEventListener("click", () => {
 (function() {
     var script = document.createElement("script");
     script.onload = function() {
+        // @ts-ignore
         var stats = new window.Stats();
         document.body.appendChild(stats.dom);
         requestAnimationFrame(function loop() {
@@ -148,9 +149,9 @@ document.getElementById("btnBigTest").addEventListener("click", () => {
     document.head.appendChild(script);
 })();
 
-const lbTotal = document.getElementById("lbTotal");
-const lbHide = document.getElementById("lbHide");
-const lbInView = document.getElementById("lbInView");
+const lbTotal = document.getElementById("lbTotal")!;
+const lbHide = document.getElementById("lbHide")!;
+const lbInView = document.getElementById("lbInView")!;
 
 const rect = containerEl.getBoundingClientRect();
 const { left, width } = rect;
@@ -200,7 +201,7 @@ document.addEventListener("fullscreenchange", function() {
     goFull();
 });
 
-document.getElementById("btnFull").addEventListener("click", ev => {
+document.getElementById("btnFull")!.addEventListener("click", ev => {
     ev.stopPropagation();
     document.body.requestFullscreen().then(() => {
         setTimeout(() => {
