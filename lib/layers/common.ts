@@ -30,6 +30,9 @@ class CommonLayer extends Layer {
     private clearTicket: number;
     private pausedTime: number;
     private traceManager: TraceManager;
+    private index = 0;
+
+    private queue: BarrageItem[] = [];
 
     constructor(container: HTMLElement) {
         super(container);
@@ -51,7 +54,7 @@ class CommonLayer extends Layer {
 
         const { HEIGHT, WIDTH } = this;
         this.option = Object.assign({}, DEFAULT_OPTION, option);
-        this.createNewFrame();
+        // this.createNewFrame();
         this.registerAnimationEvents();
         this.getBaseMeasure(BUILTIN_CLASS.DEFAULT_BARRAGE);
         const traceHeight = this.baseMeasure.outerHeight + this.baseMeasure.height;
@@ -132,8 +135,8 @@ class CommonLayer extends Layer {
     getElementLength(item: BarrageItem, el: HTMLElement) {
         const { useMeasure } = this.option;
         const { forceDetect, render, content } = item;
-        if (!useMeasure || forceDetect || render) {
-            return el.getBoundingClientRect().width;
+        if (!!useMeasure || forceDetect || render) {
+            return Math.ceil(el.getBoundingClientRect().width);
         }
         const { baseMeasure } = this;
         return content.length * baseMeasure.letterWidth + baseMeasure.outerWidth;
@@ -154,60 +157,80 @@ class CommonLayer extends Layer {
         this.traceManager.set(traceIndex, x, len);
     }
 
-    send(queue: BarrageItem[]) {
+    send(items: BarrageItem[]) {
+
+        this.queue.push(...items);
+        const { queue } = this;
+
         if (this.status !== 1 || queue.length <= 0) {
             return;
         }
-
-        const el = this.currentFrame;
-        if (!el) {
+        const frame = this.currentFrame;
+        if (!frame) {
             return;
         }
-        const poolItems = el.querySelectorAll(`${BUILTIN_CLASS.DEFAULT_BARRAGE}.hide`);
+        const poolItems = frame.querySelectorAll(`${BUILTIN_CLASS.DEFAULT_BARRAGE}.hide`);
         const poolLength = poolItems.length;
-        const x = this.getCurrentX(el);
+        const x = this.getCurrentX(frame);
+
+        const trace = this.traceManager.getExpectedTrace(x);
+        if (!trace) return;
+
         // 先利用资源池
         if (poolLength > 0) {
             const realLength = Math.min(queue.length, poolLength);
             let newItem = null;
             for (let index = 0; index < realLength; index++) {
+                const traceInfo = this.traceManager.getExpectedTrace(x);
+                if (!traceInfo) break;
                 const item = queue[index];
-                const { index: traceIndex, y: top } = this.getTraceInfo(item);
+                const { index: traceIndex, trace } = traceInfo;
                 newItem = poolItems[index] as HTMLDivElement;
                 newItem.class = BUILTIN_CLASS.DEFAULT_BARRAGE;
                 newItem.innerHTML = item.content;
-                newItem.style.cssText = `top:${top}px;left:${x}px;${item.style || ""}`;
+                newItem.style.cssText = `top:${trace.y}px;left:${x}px;${item.style || ""}`;
                 if (item.className) {
                     newItem.classList.add(item.className);
                 }
                 this.setTraceInfo(traceIndex, x, this.getElementLength(item, newItem));
+                queue.splice(0, 1);
             }
-            queue.splice(0, realLength);
+
         }
 
         // 然后创建新节点
         if (queue.length > 0) {
             // const fragment = document.createDocumentFragment();
-            const newItems = queue.map(item => {
-                const { index: traceIndex, y: top } = this.getTraceInfo(item);
-                const newItem = this.createBarrageNode(item, x, top);
-                el.appendChild(newItem);
+
+            for (let i = 0; i < queue.length; i++) {
+                const traceInfo = this.traceManager.getExpectedTrace(x);
+                if (!traceInfo) break;
+                const { index: traceIndex, trace } = traceInfo;
+                const item = queue[i];
+                const newItem = this.createBarrageNode(item, x, trace.y);
+                frame.appendChild(newItem);
                 this.setTraceInfo(traceIndex, x, this.getElementLength(item, newItem));
-                return el;
-                // return newItem;
-            });
-            // .forEach(item => fragment.appendChild(item));
-            // el.appendChild(fragment);
-            queue.splice(0);
+                queue.splice(0, 1);
+            }
+
+            // const newItems = queue.map(item => {
+
+            //     return frame;
+            //     // return newItem;
+            // });
+            // // .forEach(item => fragment.appendChild(item));
+            // // el.appendChild(fragment);
+            // queue.splice(0);
         }
     }
 
     createNewFrame(durationRate = 1) {
+        this.index++;
         const { duration, id, zIndex } = this.option;
         const frame: HTMLDivElement = document.createElement("div");
         frame.className = BUILTIN_CLASS.FRAME;
         frame.style.animationDuration = duration * durationRate + "ms";
-        frame.id = id + "_frames_frame_" + this.frames.length;
+        frame.id = id + "_frames_frame_" + (this.index % 4);
         frame.style.zIndex = zIndex + "";
 
         this.container.appendChild(frame);
@@ -347,9 +370,10 @@ class CommonLayer extends Layer {
                             this.currentFrame.classList.add("barrage-animation-1");
                             this.resetFramesZIndex();
                             this.traceManager.increasePeriod();
+                            this.traceManager.batchDecreaseX(currentFrame.getBoundingClientRect().width)
                             break;
                         case BUILTIN_CLASS.STAGE2_KF_NAME:
-                            this.clear(currentFrame);
+                            this.clear(current);
                             currentFrame.classList.remove(BUILTIN_CLASS.STAGE2_CLASS);
                             break;
                         default:

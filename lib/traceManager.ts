@@ -115,6 +115,19 @@ class TraceManager {
         const index = this.traces.findIndex(t => t.tail === min);
         return index;
     }
+
+    getExpectedTrace(x: number) {
+        const index = this.findMinTraceIndex();
+        const trace = this.traces[index];
+        return trace.tail <= x ? {
+            trace,
+            index
+        } : null
+    }
+
+    batchDecreaseX(val: number) {
+        this.traces.forEach(t => t.tail = Math.max(0, t.tail - val))
+    }
 }
 
 export default TraceManager;

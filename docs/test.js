@@ -14,14 +14,14 @@ manager.init(containerEl, [
         duration: 10000,
         useMeasure: true,
     },
-    {
-        duration: 8000,
-        useMeasure: true,
-    },
-    {
-        duration: 6000,
-        useMeasure: true,
-    },
+    // {
+    //     duration: 8000,
+    //     useMeasure: true,
+    // },
+    // {
+    //     duration: 6000,
+    //     useMeasure: true,
+    // },
 ]);
 manager.start();
 var ticket = 0;
@@ -32,30 +32,30 @@ var pools = [
         duration: 10000,
     },
     { content: "25.5啥的也算一级", style: "color:#FFFFFF", duration: 8000 },
-    {
-        forceDetect: true,
-        duration: 6000,
-        content:
-            "<img src='https://img.soogif.com/VO7KJY9mZv3FByd2Igf7K9fGlRlmursf.gif' style='height:30px;vertical-align: middle;'>留下jo印留下jo印留下jo印",
-    },
+    // {
+    //     forceDetect: true,
+    //     duration: 6000,
+    //     content:
+    //         "<img src='https://img.soogif.com/VO7KJY9mZv3FByd2Igf7K9fGlRlmursf.gif' style='width:30px;vertical-align: middle;'>留下jo印留下jo印留下jo印",
+    // },
     { duration: 6000, render: "高价回收天堂之眼，不要问我为什么" },
-    {
-        render: ({ left, top }) => {
-            const el = document.createElement("span");
-            el.innerHTML = "麦姐在学院除了老大老二基本就是最厉害的了 from span";
-            el.style.left = left + "px";
-            el.style.top = top + "px";
-            // el.style.zIndex = "999";
-            // el.style.backgroundColor = "#666";
-            return el;
-        },
-    },
-    {
-        content:
-            "<img src='https://p6-passport.byteacctimg.com/img/user-avatar/f1a9f122e925aeef5e4534ff7f706729~90x90.awebp' style='height:20px'/> 头像哦",
-        forceDetect: true,
-        style: "z-index:99;",
-    },
+    // {
+    //     render: ({ left, top }) => {
+    //         const el = document.createElement("span");
+    //         el.innerHTML = "麦姐在学院除了老大老二基本就是最厉害的了 from span";
+    //         el.style.left = left + "px";
+    //         el.style.top = top + "px";
+    //         // el.style.zIndex = "999";
+    //         // el.style.backgroundColor = "#666";
+    //         return el;
+    //     },
+    // },
+    // {
+    //     content:
+    //         "<img src='https://p6-passport.byteacctimg.com/img/user-avatar/f1a9f122e925aeef5e4534ff7f706729~90x90.awebp' style='width:20px'/> 头像哦",
+    //     forceDetect: true,
+    //     style: "z-index:99;",
+    // },
     "好假炮姐当年1v3有一个5的和两个4的都打得过",
     "这个女的好帅啊，一拳一个机器人的那个",
     "哇喔哇喔哇喔哇喔好燃啊！！！",
@@ -172,20 +172,20 @@ setInterval(function () {
             "ms)";
     });
 }, 5000);
-document.addEventListener("visibilitychange", function () {
-    // 用户离开了当前页面
-    if (document.visibilityState === "hidden") {
-        manager.stop();
-        console.log("stop....");
-        // console.log(document.getElementById("frames_frame1").getBoundingClientRect())
-    }
-    // 用户打开或回到页面
-    if (document.visibilityState === "visible") {
-        manager.start();
-        console.log("start....");
-        // console.log(document.getElementById("frames_frame1").getBoundingClientRect())
-    }
-});
+// document.addEventListener("visibilitychange", function () {
+//     // 用户离开了当前页面
+//     if (document.visibilityState === "hidden") {
+//         manager.stop();
+//         console.log("stop....");
+//         // console.log(document.getElementById("frames_frame1").getBoundingClientRect())
+//     }
+//     // 用户打开或回到页面
+//     if (document.visibilityState === "visible") {
+//         manager.start();
+//         console.log("start....");
+//         // console.log(document.getElementById("frames_frame1").getBoundingClientRect())
+//     }
+// });
 document.addEventListener("fullscreenchange", function () {
     console.log("fullscreenchange");
     if (!document.fullscreenElement) {
