@@ -1,28 +1,28 @@
-.danmu-frame {
+.barrage-frame {
     contain: layout;
     height: 100%;
     position: absolute;
     will-change: transform;
 }
 
-.danmu-frame-common {
+.barrage-frame-common {
     width: 100%;
     left: 100%;
 }
 
-.danmu-frame:nth-child(1) {
+.barrage-frame:nth-child(1) {
     z-index: 11;
 }
 
-.danmu-frame:nth-child(2) {
+.barrage-frame:nth-child(2) {
     z-index: 10;
 }
 
-.danmu-frame:nth-child(3) {
+.barrage-frame:nth-child(3) {
     z-index: 9;
 }
 
-.danmu-item {
+.barrage-item {
     position: absolute;
     display: inline-block;
     border-radius: 2px;
@@ -39,12 +39,12 @@
     user-select: none;
 }
 
-.danmu-animation-1 {
+.barrage-animation-1 {
     animation: animation-stage-1 40s linear 0ms;
     animation-fill-mode: forwards;
 }
 
-.danmu-animation-2 {
+.barrage-animation-2 {
     animation: animation-stage-2 40s linear 0ms;
     animation-fill-mode: forwards;
 }

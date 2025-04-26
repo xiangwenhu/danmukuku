@@ -1,4 +1,4 @@
-import { ElementRect, DanmuItem } from "../types";
+import { ElementRect, BarrageItem } from "../types";
 import { measureElement } from "../util";
 
 export default abstract class Layer {
@@ -26,14 +26,14 @@ export default abstract class Layer {
 
     abstract resize(option: any): void;
 
-    abstract send(items: DanmuItem[]): void;
+    abstract send(items: BarrageItem[]): void;
 
     getBaseMeasure(className, tagName: string = "div") {
         this.baseMeasure = measureElement(tagName, className, this.container);
     }
 
     remove(itemId: string | number) {
-        const el = this.container.querySelector(`[danmu-id='${itemId}']`);
+        const el = this.container.querySelector(`[barrage-id='${itemId}']`);
         if (el) {
             el.parentNode.removeChild(el);
         }

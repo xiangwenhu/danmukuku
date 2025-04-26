@@ -1,6 +1,7 @@
 // import DanmuManager from "./dist/es6"   // ES6
 // const DanmuManager = require("./dist/cmjs").default; // commonjs
 import DanmuManager from "./lib";
+import { BarrageItem } from "./lib/types";
 
 const videoEl = document.querySelector("video")!;
 let isPlayed = false;
@@ -29,7 +30,7 @@ manager.init(containerEl, [
 manager.start();
 let ticket = 0;
 
-const pools = [
+const pools: (BarrageItem | string )[] = [
     { content: "完结撒花完结撒花完结撒花", style: "color:Red", duration: 10000 },
     { content: "25.5啥的也算一级", style: "color:blue", duration: 8000 },
     {
@@ -72,10 +73,11 @@ function getRandomIndex(len: number) {
 }
 
 function batchGet(count: number) {
-    const r = [];
+    const r: any[] = [];
     const len = pools.length;
     for (let i = 0; i < count; i++) {
-        r.push(pools[getRandomIndex(len)]);
+        const danmuItem = pools[getRandomIndex(len)]!
+        r.push(danmuItem);
     }
     return r;
 }
@@ -159,9 +161,9 @@ const right = left + width;
 setInterval(function() {
     (window as any).requestIdleCallback(() => {
         let startTime = performance.now();
-        const allItems = Array.from(containerEl.querySelectorAll(".danmu-item"));
+        const allItems = Array.from(containerEl.querySelectorAll(".barrage-item"));
 
-        const accCount = document.querySelectorAll(".danmu-item-acc").length;
+        const accCount = document.querySelectorAll(".barrage-item-acc").length;
         const len = allItems.length;
         const inHideLen = allItems.filter(item => item.classList.contains("hide")).length;
         const inViewLen = allItems.filter(function(item) {

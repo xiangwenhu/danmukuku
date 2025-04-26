@@ -9,7 +9,7 @@ videoEl.oncanplay = function () {
 };
 var containerEl = document.getElementById("container");
 var manager = null;
-manager = new window.danmukuku.default();
+manager = new window.fragmentBarrage.default();
 window.manager = manager;
 manager.init(containerEl, [
     {
@@ -17,19 +17,19 @@ manager.init(containerEl, [
         useMeasure: true
     },
     {
-        duration: 8000,
-        useMeasure: true
-    },
-    {
         duration: 6000,
         useMeasure: true
-    }
+    },
+    // {
+    //     duration: 6000,
+    //     useMeasure: true
+    // }
 ]);
 manager.start();
 var ticket = 0;
 var pools = [
     { content: "完结撒花完结撒花完结撒花", style: "color:Red", duration: 10000 },
-    { content: "25.5啥的也算一级", style: "color:blue", duration: 8000 },
+    { content: "25.5啥的也算一级", style: "color:#FFFFFF", duration: 8000 },
     // {
     //     forceDetect: true,
     //     duration:5000,
@@ -79,15 +79,15 @@ var txtIntervalEl = document.getElementById("txtInterval");
 var txtBatchCount = document.getElementById("txtBatchCount");
 function startBatch() {
     var batchCount = +txtBatchCount.value;
-    manager.sendDanmu(batchGet(batchCount));
+    manager.send(batchGet(batchCount));
     ticket = window.setInterval(function () {
-        manager.sendDanmu(batchGet(batchCount));
+        manager.send(batchGet(batchCount));
     }, +txtIntervalEl.value);
 }
 var isBigTest = false;
 var txtDanmuEl = document.getElementById("txtDanmu");
 document.getElementById("btnSend").addEventListener("click", function (ev) {
-    manager.sendDanmu(txtDanmuEl.value);
+    manager.send(txtDanmuEl.value);
     ev.stopPropagation();
 }, false);
 document.getElementById("btnPause").addEventListener("click", function () {
@@ -141,8 +141,8 @@ var right = left + width;
 setInterval(function () {
     window.requestIdleCallback(function () {
         var startTime = performance.now();
-        var allItems = Array.from(containerEl.querySelectorAll(".danmu-item"));
-        var accCount = document.querySelectorAll(".danmu-item-acc").length;
+        var allItems = Array.from(containerEl.querySelectorAll(".barrage-item"));
+        var accCount = document.querySelectorAll(".barrage-item-acc").length;
         var len = allItems.length;
         var inHideLen = allItems.filter(function (item) { return item.classList.contains("hide"); }).length;
         var inViewLen = allItems.filter(function (item) {

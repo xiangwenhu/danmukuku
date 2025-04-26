@@ -2,7 +2,7 @@ import { get2DTranslate } from "../util";
 import Layer from "./layer";
 import TraceManager from "../traceManager";
 import { BUILTIN_CLASS } from "../constant";
-import { CommonLayerOption, DanmuItem } from "../types";
+import { CommonLayerOption, BarrageItem } from "../types";
 
 const DEFAULT_OPTION = {
     reuse: false,
@@ -20,12 +20,12 @@ enum animationPlayState {
 class CommonLayer extends Layer {
     private frames: HTMLDivElement[];
     private currentFrame: HTMLDivElement;
-    private sampleDanmuItem: HTMLDivElement;
+    private sampleBarrageItem: HTMLDivElement;
     private HEIGHT: number;
     private WIDTH: number;
     private initialWidth: number;
     private animatingTime: number;
-    private rect: ClientRect;
+    private rect: DOMRect;
     public option: CommonLayerOption;
     private clearTicket: number;
     private pausedTime: number;
@@ -46,14 +46,14 @@ class CommonLayer extends Layer {
             option.id = Math.random();
         }
 
-        this.sampleDanmuItem = document.createElement("div");
-        this.sampleDanmuItem.className = option.className || BUILTIN_CLASS.DEFAULT_DANMU;
+        this.sampleBarrageItem = document.createElement("div");
+        this.sampleBarrageItem.className = option.className || BUILTIN_CLASS.DEFAULT_BARRAGE;
 
         const { HEIGHT, WIDTH } = this;
         this.option = Object.assign({}, DEFAULT_OPTION, option);
         this.createNewFrame();
-        this.resgisterAnimationEvents();
-        this.getBaseMeasure(BUILTIN_CLASS.DEFAULT_DANMU);
+        this.registerAnimationEvents();
+        this.getBaseMeasure(BUILTIN_CLASS.DEFAULT_BARRAGE);
         const traceHeight = this.baseMeasure.outerHeight + this.baseMeasure.height;
         this.traceManager = new TraceManager({
             height: HEIGHT,
@@ -68,7 +68,7 @@ class CommonLayer extends Layer {
         this.rect = container.getBoundingClientRect();
         this.HEIGHT = container.clientHeight;
         this.WIDTH = container.clientWidth;
-        this.getBaseMeasure(BUILTIN_CLASS.DEFAULT_DANMU);
+        this.getBaseMeasure(BUILTIN_CLASS.DEFAULT_BARRAGE);
         const traceHeight = this.baseMeasure.outerHeight + this.baseMeasure.height;
         this.traceManager.resize({
             height: this.HEIGHT,
@@ -129,7 +129,7 @@ class CommonLayer extends Layer {
         return -x;
     }
 
-    getElementLength(item: DanmuItem, el: HTMLElement) {
+    getElementLength(item: BarrageItem, el: HTMLElement) {
         const { useMeasure } = this.option;
         const { forceDetect, render, content } = item;
         if (!useMeasure || forceDetect || render) {
@@ -139,7 +139,7 @@ class CommonLayer extends Layer {
         return content.length * baseMeasure.letterWidth + baseMeasure.outerWidth;
     }
 
-    getTraceInfo(item: DanmuItem) {
+    getTraceInfo(item: BarrageItem) {
         if (item.trace) {
             const index = Math.min(item.trace, this.traceManager.traceCount - 1);
             return {
@@ -154,7 +154,7 @@ class CommonLayer extends Layer {
         this.traceManager.set(traceIndex, x, len);
     }
 
-    send(queue: DanmuItem[]) {
+    send(queue: BarrageItem[]) {
         if (this.status !== 1 || queue.length <= 0) {
             return;
         }
@@ -163,7 +163,7 @@ class CommonLayer extends Layer {
         if (!el) {
             return;
         }
-        const poolItems = el.querySelectorAll(`${BUILTIN_CLASS.DEFAULT_DANMU}.hide`);
+        const poolItems = el.querySelectorAll(`${BUILTIN_CLASS.DEFAULT_BARRAGE}.hide`);
         const poolLength = poolItems.length;
         const x = this.getCurrentX(el);
         // 先利用资源池
@@ -174,7 +174,7 @@ class CommonLayer extends Layer {
                 const item = queue[index];
                 const { index: traceIndex, y: top } = this.getTraceInfo(item);
                 newItem = poolItems[index] as HTMLDivElement;
-                newItem.class = BUILTIN_CLASS.DEFAULT_DANMU;
+                newItem.class = BUILTIN_CLASS.DEFAULT_BARRAGE;
                 newItem.innerHTML = item.content;
                 newItem.style.cssText = `top:${top}px;left:${x}px;${item.style || ""}`;
                 if (item.className) {
@@ -187,17 +187,17 @@ class CommonLayer extends Layer {
 
         // 然后创建新节点
         if (queue.length > 0) {
-            // const frament = document.createDocumentFragment();
+            // const fragment = document.createDocumentFragment();
             const newItems = queue.map(item => {
                 const { index: traceIndex, y: top } = this.getTraceInfo(item);
-                const newItem = this.createDanmuItem(item, x, top);
+                const newItem = this.createBarrageNode(item, x, top);
                 el.appendChild(newItem);
                 this.setTraceInfo(traceIndex, x, this.getElementLength(item, newItem));
                 return el;
                 // return newItem;
             });
-            // .forEach(item => frament.appendChild(item));
-            // el.appendChild(frament);
+            // .forEach(item => fragment.appendChild(item));
+            // el.appendChild(fragment);
             queue.splice(0);
         }
     }
@@ -215,14 +215,14 @@ class CommonLayer extends Layer {
         this.currentFrame = frame;
     }
 
-    createDanmuItem(item: DanmuItem, left: number, top?: number) {
-        let el = item.render && this.createDanmuWithRender(item, left, top);
+    createBarrageNode(item: BarrageItem, left: number, top?: number) {
+        let el = item.render && this.createBarrageNodeWithRender(item, left, top);
         if (el) {
             return el;
         }
 
         const { top: t, left: l } = this.getNewTopLeft(left, top);
-        el = this.sampleDanmuItem.cloneNode() as HTMLElement;
+        el = this.sampleBarrageItem.cloneNode() as HTMLElement;
         el.innerHTML = item.content;
         el.dataset.tLength = item.content.length + "";
         el.style.cssText = `top:${t}px;left:${l}px;${item.style || ""}`;
@@ -232,30 +232,30 @@ class CommonLayer extends Layer {
         return el;
     }
 
-    createDanmuWithRender(item: DanmuItem, left: number, top?: number) {
+    createBarrageNodeWithRender(item: BarrageItem, left: number, top?: number) {
         const data = { left, top, class: item.className, style: item.style };
         if (typeof item.render === "function") {
             const el = item.render(data);
             if (el instanceof HTMLElement) {
-                if (!el.classList.contains(BUILTIN_CLASS.DEFAULT_DANMU)) {
-                    el.classList.add(BUILTIN_CLASS.DEFAULT_DANMU);
+                if (!el.classList.contains(BUILTIN_CLASS.DEFAULT_BARRAGE)) {
+                    el.classList.add(BUILTIN_CLASS.DEFAULT_BARRAGE);
                 }
                 return el;
             }
             if (typeof el === "string") {
-                return this.wrapperHTMLStringDanmu(left, top, el);
+                return this.wrapperHTMLStringBarrageNode(left, top, el);
             }
         } else if (typeof item.render === "object" && item.render instanceof HTMLElement) {
             return item.render;
         } else if (typeof item.render === "string") {
-            return this.wrapperHTMLStringDanmu(left, top, item.render);
+            return this.wrapperHTMLStringBarrageNode(left, top, item.render);
         }
         return null;
     }
 
-    wrapperHTMLStringDanmu(left: number, top: number, content: string) {
+    wrapperHTMLStringBarrageNode(left: number, top: number, content: string) {
         const { top: t, left: l } = this.getNewTopLeft(left, top);
-        const el = this.sampleDanmuItem.cloneNode() as HTMLElement;
+        const el = this.sampleBarrageItem.cloneNode() as HTMLElement;
         el.innerHTML = content;
         el.style.cssText = `top:${t}px;left:${l}px;`;
         return el;
@@ -270,7 +270,7 @@ class CommonLayer extends Layer {
                 .forEach(frame => {
                     const { left, width } = this.rect;
                     const right = left + width;
-                    const allItems = frame.querySelectorAll(`.${BUILTIN_CLASS.DEFAULT_DANMU}:not(.hide)`);
+                    const allItems = frame.querySelectorAll(`.${BUILTIN_CLASS.DEFAULT_BARRAGE}:not(.hide)`);
                     const notInViewItems = Array.from(allItems)
                         .slice(0, 50)
                         .filter(function (item) {
@@ -294,9 +294,9 @@ class CommonLayer extends Layer {
         };
     }
 
-    clearDanmus(el: HTMLDivElement) {
+    clear(el: HTMLDivElement) {
         if (this.option.reuse) {
-            el.querySelectorAll(`.${BUILTIN_CLASS.DEFAULT_DANMU}:not(.hide)`).forEach((child: HTMLElement) => {
+            el.querySelectorAll(`.${BUILTIN_CLASS.DEFAULT_BARRAGE}:not(.hide)`).forEach((child: HTMLElement) => {
                 child.classList.add("hide");
                 if (child.style.transition) {
                     child.style.transition = null;
@@ -308,7 +308,7 @@ class CommonLayer extends Layer {
         el.innerHTML = "";
     }
 
-    resetFramesZindex() {
+    resetFramesZIndex() {
         const { zIndex } = this.option;
         this.frames.forEach((f, index) => {
             f.style.zIndex = Math.max(zIndex + 2 - index, 0) + "";
@@ -328,7 +328,7 @@ class CommonLayer extends Layer {
         }
     }
 
-    resgisterAnimationEvents() {
+    registerAnimationEvents() {
         const { frames, option } = this;
         this.container.addEventListener("animationend", (ev: AnimationEvent) => {
             const current = ev.target as HTMLDivElement;
@@ -344,12 +344,12 @@ class CommonLayer extends Layer {
                             currentFrame.classList.add(BUILTIN_CLASS.STAGE2_CLASS);
                             currentFrame.style.animationDuration = option.duration * 2 + "ms";
                             this.createNewFrame();
-                            this.currentFrame.classList.add("danmu-animation-1");
-                            this.resetFramesZindex();
+                            this.currentFrame.classList.add("barrage-animation-1");
+                            this.resetFramesZIndex();
                             this.traceManager.increasePeriod();
                             break;
                         case BUILTIN_CLASS.STAGE2_KF_NAME:
-                            this.clearDanmus(currentFrame);
+                            this.clear(currentFrame);
                             currentFrame.classList.remove(BUILTIN_CLASS.STAGE2_CLASS);
                             break;
                         default:

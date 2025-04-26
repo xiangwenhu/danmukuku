@@ -1,16 +1,16 @@
-import { DanmuItem, CommonLayerOption } from './types';
+import { BarrageItem, CommonLayerOption } from './types';
 import Layer from "./layers/layer";
 import CommonLayer from "./layers/common";
 import { enqueue, addListener, removeListener, dequeue } from "./queue";
 
 
-type DanmuContent = string | DanmuItem;
+type BarrageContent = string | BarrageItem;
 
-function toDanmuItem(danmu: string | DanmuItem): DanmuItem {
-    return typeof danmu === "string" ? { content: danmu } : danmu;
+function toBarrageItem(item: string | BarrageItem): BarrageItem {
+    return typeof item === "string" ? { content: item } : item;
 }
 
-export default class DanmuManager {
+export default class BarrageManager {
     private layers: Layer[] = [];
     private status: 0 | 1 | 2; // 枚举？ 0: 停止  1 运行  2 暂停
 
@@ -18,7 +18,7 @@ export default class DanmuManager {
         this.batch = this.batch.bind(this);
     }
 
-    private batch(data: DanmuItem[]) {
+    private batch(data: BarrageItem[]) {
         // 改进批量
         data.forEach(d => {
             const layer =
@@ -31,15 +31,15 @@ export default class DanmuManager {
         });
     }
 
-    sendDanmu(danmu: DanmuContent[] | DanmuItem | string) {
+    send(content: BarrageContent[] | BarrageItem | string) {
         if (this.status !== 1) {
             return;
         }
-        let contents: DanmuItem[] = null;
-        if (Array.isArray(danmu)) {
-            contents = danmu.map((d: DanmuItem | string) => toDanmuItem(d));
+        let contents: BarrageItem[] = null;
+        if (Array.isArray(content)) {
+            contents = content.map((d: BarrageItem | string) => toBarrageItem(d));
         } else {
-            contents = [toDanmuItem(danmu)];
+            contents = [toBarrageItem(content)];
         }
 
         enqueue(contents);
@@ -102,7 +102,7 @@ export default class DanmuManager {
         this.layers.forEach(l => l.resize(option));
     }
 
-    destory() {
+    destroy() {
         this.layers.forEach(l => l.destroy());
     }
 }

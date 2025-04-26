@@ -1,4 +1,4 @@
-export interface ElementRect{
+export interface ElementRect {
     outerWidth: number;
     outerHeight: number;
     letterWidth: number;
@@ -15,7 +15,7 @@ export interface CommonLayerOption {
     className?: string;
 }
 
-export interface DanmuItem {
+export interface BarrageItem {
     content?: string;
     forceDetect?: boolean;
     render?: ((any) => HTMLElement) | HTMLElement | string;
@@ -24,3 +24,4 @@ export interface DanmuItem {
     trace?: number;
     duration?: number;
 }
+

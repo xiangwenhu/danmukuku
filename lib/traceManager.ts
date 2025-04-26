@@ -1,6 +1,6 @@
 export enum TraceStrategy {
-    radom = "random",
-    quque = "queque"
+    random = "random",
+    queue = "queue"
 }
 
 export interface TraceMangerOption {
@@ -18,20 +18,20 @@ class TraceManager {
     private option: TraceMangerOption;
     public traces: Trace[];
     private period: number;
-    private xaxis: number;
+    private XAxis: number;
     private lastIndex: number;
     constructor(option: TraceMangerOption) {
         this.option = option;
         this.period = 0;
         this.traces = [];
         this.createTraces();
-        this.xaxis = 0;
+        this.XAxis = 0;
         this.lastIndex = 0;
     }
 
     increasePeriod() {
         this.period++;
-        this.xaxis += this.option.width;
+        this.XAxis += this.option.width;
     }
 
     get traceCount() {
@@ -56,7 +56,7 @@ class TraceManager {
         this.period = 0;
         this.traces = [];
         this.createTraces();
-        this.xaxis = 0;
+        this.XAxis = 0;
     }
 
     resize(option: TraceMangerOption) {
@@ -75,7 +75,7 @@ class TraceManager {
             return;
         }
 
-        const index = this.findTraceIndex();
+        const index = this.findMinTraceIndex();
         const baseValue = index >= 0 ? traces[index].tail : 0;
 
         for (let i = oldTraceCount - 1; i < count; i++) {
@@ -87,14 +87,14 @@ class TraceManager {
     }
 
     get() {
-        let index = this.findTraceIndex();
+        let index = this.findMinTraceIndex();
         let trace = this.traces[index];
 
         // 两次相等，随机
-        if (index === this.lastIndex) {
-            index = ~~(Math.random() * this.traceCount);
-            trace = this.traces[index];
-        }
+        // if (index === this.lastIndex) {
+        //     index = ~~(Math.random() * this.traceCount);
+        //     trace = this.traces[index];
+        // }
         this.lastIndex = index;
 
         return {
@@ -105,10 +105,11 @@ class TraceManager {
 
     set(index: number, x: number, len: number) {
         const trace = this.traces[index];
-        trace.tail = this.xaxis + Math.max(x + len, trace.tail);
+        trace.tail = this.XAxis + Math.max(x + len, trace.tail);
     }
 
-    findTraceIndex() {
+    findMinTraceIndex() {
+        // sort ?
         const tv = this.traces.map(t => t.tail);
         const min = Math.min(...tv);
         const index = this.traces.findIndex(t => t.tail === min);
